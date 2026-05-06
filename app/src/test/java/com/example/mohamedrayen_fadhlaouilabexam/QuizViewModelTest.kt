@@ -88,6 +88,45 @@ class QuizViewModelTest {
     }
 
     @Test
+    fun `finishing quiz sets isQuizFinished to true`() = runTest {
+        viewModel.startQuiz(null, Difficulty.EASY)
+        
+        // Answer 5 questions
+        repeat(5) {
+            viewModel.onAnswerSelected(0)
+            viewModel.nextQuestion()
+        }
+        
+        assertTrue(viewModel.uiState.value.isQuizFinished)
+    }
+
+    @Test
+    fun `pauseTimer stops the countdown`() = runTest {
+        viewModel.startQuiz(null, Difficulty.EASY)
+        val initialTime = viewModel.uiState.value.timeLeft
+        
+        viewModel.pauseTimer()
+        advanceTimeBy(2000)
+        
+        assertEquals(initialTime, viewModel.uiState.value.timeLeft)
+    }
+
+    @Test
+    fun `resumeTimer restarts the countdown`() = runTest {
+        viewModel.startQuiz(null, Difficulty.EASY)
+        val initialTime = viewModel.uiState.value.timeLeft
+        
+        viewModel.pauseTimer()
+        advanceTimeBy(2000)
+        assertEquals(initialTime, viewModel.uiState.value.timeLeft)
+        
+        viewModel.resumeTimer()
+        advanceTimeBy(1001)
+        
+        assertEquals(initialTime - 1, viewModel.uiState.value.timeLeft)
+    }
+
+    @Test
     fun `timer decreases timeLeft over time`() = runTest {
         viewModel.startQuiz(null, Difficulty.EASY)
         val initialTime = viewModel.uiState.value.timeLeft
